@@ -1,7 +1,7 @@
 export const GameConfig = {
   colors: {
     highlight: '#995210',
-    black: '#67595E',
+    black: '#352e31',
     black_hover: '#51464a',
     white: '#EED6D3',
     white_hover: '#cebab7',
