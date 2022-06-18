@@ -1,0 +1,22 @@
+.game {
+  display: flex;
+
+  .board {
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+
+    &.pointer {
+      cursor: pointer;
+    }
+  }
+
+  .log {
+    display: flex;
+    flex-direction: column;
+    margin-left: 16px;
+    width: 300px;
+
+    .log-item {
+      margin-top: 8px;
+    }
+  }
+}
