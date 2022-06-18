@@ -2,20 +2,9 @@ import { Game } from './game/Game/Game';
 
 document.addEventListener("DOMContentLoaded", () => {
   const canvas = document.querySelector('.board');
-  const game = new Game()
-  let resizeTimer: any = null;
+  const game = new Game();
   document.addEventListener('click', e => game.onClick(e));
-  window.addEventListener('resize', () => {
-    if (resizeTimer) {
-      clearTimeout(resizeTimer);
-    }
-    resizeTimer = setTimeout(() => {
-      if (game?.board) {
-        game.board.setBoardSize();
-        game.board.render(true);
-      }
-    }, 100);
-  }, true);
+  window.addEventListener('resize', () => game.board.setBoardSize());
   if (canvas) {
     canvas.addEventListener('mousemove', e => {
       if (game.onMouseMove(e as MouseEvent)) {

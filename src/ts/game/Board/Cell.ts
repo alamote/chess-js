@@ -11,7 +11,7 @@ interface CellState {
   is_active: boolean;
   is_movable: boolean;
   has_moves: boolean;
-  move_figure: string | null;
+  move_figure: HTMLImageElement | null;
 }
 
 export default class Cell {
@@ -21,7 +21,7 @@ export default class Cell {
 
   size: number;
   color!: ColorEnum;
-  image!: string;
+  image!: HTMLImageElement;
 
   row: number;
   column: number;
@@ -42,7 +42,8 @@ export default class Cell {
     this.size = GameUtility.cellSize();
     this.context = context;
     this.game = game;
-    this.image = `assets/images/cell_bg_${Math.floor(Math.random() * 8) + 1}.png`
+    this.image = new Image(this.size, this.size);
+    this.image.src = `assets/images/cell_bg_${Math.floor(Math.random() * 8) + 1}.png`;
   }
 
   _figure!: Figure | null;
@@ -96,31 +97,29 @@ export default class Cell {
         line_color: GameConfig.colors.border,
         line_width: GameConfig.border_width,
       });
-      CanvasUtility.image(this.context, this.x, this.y, this.size, this.size, this.image, {}, () => {
-        if (this.figure?.image) {
-          CanvasUtility.image(this.context, this.x, this.y, this.size, this.size, this.figure.image, {}, () => {
-            if (this.state.is_movable) {
-              CanvasUtility.circle(this.context, this.x + this.size / 2, this.y + this.size / 2, this.size / 4, {
-                fill: true,
-                fill_color: GameConfig.colors.move_attack,
-              });
-              if (this.state.move_figure) {
-                CanvasUtility.image(this.context, this.x + this.size / 3, this.y + this.size / 3, this.size / 3, this.size / 3, this.state.move_figure);
-              }
-            }
+      CanvasUtility.preloadedImage(this.context, this.x, this.y, this.size, this.size, this.image);
+      if (this.figure?.image) {
+        CanvasUtility.preloadedImage(this.context, this.x, this.y, this.size, this.size, this.figure.image);
+        if (this.state.is_movable) {
+          CanvasUtility.circle(this.context, this.x + this.size / 2, this.y + this.size / 2, this.size / 4, {
+            fill: true,
+            fill_color: GameConfig.colors.move_attack,
           });
+          if (this.state.move_figure) {
+            CanvasUtility.preloadedImage(this.context, this.x + this.size / 3, this.y + this.size / 3, this.size / 3, this.size / 3, this.state.move_figure);
+          }
         }
-      });
+      }
       if (this.state.is_movable && !this.figure) {
         CanvasUtility.circle(this.context, this.x + this.size / 2, this.y + this.size / 2, this.size / 4, {
           fill: true,
           fill_color: GameConfig.colors.move,
         });
         if (this.state.move_figure) {
-          CanvasUtility.image(this.context, this.x + this.size / 3, this.y + this.size / 3, this.size / 3, this.size / 3, this.state.move_figure);
+          CanvasUtility.preloadedImage(this.context, this.x + this.size / 3, this.y + this.size / 3, this.size / 3, this.size / 3, this.state.move_figure);
         }
       }
-      if (this.state.has_moves) {
+      if (!this.game.isAuto && this.game.me.color === this.game.activePlayer.color && this.state.has_moves) {
         CanvasUtility.rect(this.context, this.x, this.y + this.size - this.size / 20, this.size, this.size / 20, {
           fill: true,
           fill_color: GameConfig.colors.move,

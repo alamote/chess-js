@@ -1,7 +1,6 @@
 import { GameConfig } from '../config';
 import { ColorEnum } from '../interfaces';
 import Cell from './Cell';
-import Figure from '../Figure/Figure';
 import Pawn from '../Figure/Pawn';
 import Rook from '../Figure/Rook';
 import Knight from '../Figure/Knight';
@@ -23,11 +22,8 @@ export default class Board {
   canvas!: HTMLCanvasElement;
   context!: CanvasRenderingContext2D;
 
-  initialized: boolean = false;
-
   size!: number;
   cells: Cell[] = [];
-  figures: Figure[] = [];
 
   state!: BoardState;
   prevState!: BoardState;
@@ -81,7 +77,7 @@ export default class Board {
         this.getCell(row, column).figure = new Pawn(row === 1 ? ColorEnum.WHITE : ColorEnum.BLACK);
       }
     });
-    this.render();
+    requestAnimationFrame(() => this.render());
   }
 
   render(force: boolean = false) {
@@ -115,7 +111,7 @@ export default class Board {
     }
     this.cells.forEach(cell => {
       cell.state.has_moves = this.game.activePlayer.color === cell.figure?.color && cell?.figure?.hasMoves(this.game, cell);
-      cell.render()
+      cell.render(true)
     });
 
     requestAnimationFrame(() => this.render());

@@ -9,6 +9,7 @@ import Figure from '../Figure/Figure';
 export class Game {
 
   board: Board;
+  isAuto: boolean = false;
 
   log: Log = new Log();
   players: Player[] = [];
@@ -16,13 +17,21 @@ export class Game {
   activePlayer!: Player;
 
   constructor() {
-    this.players.push(new Player('Sergey', ColorEnum.WHITE));
+    this.players.push(new Player('Sergey', ColorEnum.WHITE, true));
     this.players.push(new Player('Vet', ColorEnum.BLACK));
 
     this.changePlayer();
 
+    if (this.activePlayer.color !== this.me.color) {
+      setTimeout(() => this.autoMove(), 100);
+    }
+
     this.board = new Board(this);
     this.board.reset();
+  }
+
+  get me(): Player {
+    return this.players.find(p => p.me) as Player;
   }
 
   get activeCell(): Cell | null {
@@ -30,7 +39,13 @@ export class Game {
   }
 
   move(player: Player, from: Cell, to: Cell) {
-    this.log.add(new Move(player, from, to));
+    const move = new Move(player, from, to);
+    this.log.add(move);
+    this.changePlayer();
+    this.board.cells.forEach(cell => cell.state.is_movable = false);
+    if (!this.isAuto && this.activePlayer.color !== this.me.color) {
+      setTimeout(() => this.autoMove(), 100);
+    }
   }
 
   changePlayer() {
@@ -45,7 +60,6 @@ export class Game {
     const cell = this.board.getCellByXAndY(event.offsetX, event.offsetY);
     if (cell?.state.is_movable && this.activeCell) {
       this.move(this.activePlayer, this.activeCell, cell);
-      this.changePlayer();
     }
     this.board.cells.forEach(cell => cell.state.is_movable = false);
     if (cell?.state.is_active) {
@@ -70,5 +84,25 @@ export class Game {
       cell.state.is_highlighted = true;
     }
     return !!cell?.state.is_highlighted;
+  }
+
+  autoMove() {
+    const hasMoves = this.board.cells.filter(c => c.state.has_moves && c.state.has_figure);
+    if (hasMoves.length) {
+      const from = hasMoves[Math.floor(Math.random() * hasMoves.length)];
+      from.state.is_active = true;
+      from.figure?.showMoves(this, from);
+      const targets = this.board.cells.filter(c => c.state.is_movable);
+      if (targets.length) {
+        const to = targets[Math.floor(Math.random() * targets.length)];
+        this.move(this.activePlayer, from, to);
+        from.state.is_active = false;
+      }
+    }
+  }
+
+  autoGame() {
+    this.isAuto = true;
+    setInterval(() => this.autoMove(), 100);
   }
 }

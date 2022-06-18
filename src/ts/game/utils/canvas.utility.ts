@@ -60,6 +60,17 @@ export class CanvasUtility {
     CanvasUtility.reset(context);
   }
 
+  public static preloadedImage(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, image: HTMLImageElement, options: DrawOptions = {}) {
+    if (options.shadow_blur) {
+      context.shadowBlur = options.shadow_blur;
+      if (options.shadow_color) {
+        context.shadowColor = options.shadow_color;
+      }
+    }
+    context.drawImage(image, x, y, width, height);
+    CanvasUtility.reset(context);
+  }
+
   public static image(context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, path: string, options: DrawOptions = {}, callback: () => void = () => null) {
     const figure = new Image(width, height);
     if (options.shadow_blur) {

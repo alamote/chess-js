@@ -2,13 +2,14 @@ import { ColorEnum, FigureEnum } from '../interfaces';
 import FigureMove from './FigureMove';
 import { Game } from '../Game/Game';
 import Cell from '../Board/Cell';
+import { GameUtility } from '../utils/game.utility';
 
 export default class Figure {
 
   color: ColorEnum;
   multiplier: number = 1;
   figure!: FigureEnum;
-  image!: string;
+  image!: HTMLImageElement;
 
   moves: FigureMove[] = [];
   isMoved: boolean = false;
@@ -20,7 +21,8 @@ export default class Figure {
 
   setFigure(figure: FigureEnum) {
     this.figure = figure;
-    this.image = `assets/icons/figures/${this.color}/${this.figure.toLowerCase()}.svg`;
+    this.image = new Image(GameUtility.cellSize(), GameUtility.cellSize());
+    this.image.src = `assets/icons/figures/${this.color}/${this.figure.toLowerCase()}.svg`;
   }
 
   getMoves(game: Game, cell: Cell): FigureMove[] {
