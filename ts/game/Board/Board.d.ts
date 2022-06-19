@@ -1,3 +1,4 @@
+import { ColorEnum, FigureEnum } from '../interfaces';
 import Cell from './Cell';
 import { Game } from '../Game/Game';
 interface BoardState {
@@ -12,11 +13,14 @@ export default class Board {
     state: BoardState;
     prevState: BoardState;
     constructor(game: Game);
+    get transformCell(): Cell | null;
     setBoardSize(): void;
     getCell(row: number, column: number): Cell;
     getCellByXAndY(x: number, y: number): Cell;
+    getCellsByColor(color: ColorEnum): Cell[];
+    getCellByFigureAndColor(figure: FigureEnum, color: ColorEnum): Cell;
+    processCheck(): void;
     reset(): void;
     render(force?: boolean): void;
-    getState(): BoardState;
 }
 export {};

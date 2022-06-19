@@ -7,5 +7,8 @@ export declare class Move {
     from: Cell;
     to: Cell;
     timestamp: number;
+    prevFigure: Figure | null;
     constructor(player: Player, from: Cell, to: Cell);
+    restore(): void;
+    toString(): string;
 }
