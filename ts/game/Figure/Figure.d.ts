@@ -6,7 +6,7 @@ export default class Figure {
     color: ColorEnum;
     multiplier: number;
     figure: FigureEnum;
-    image: string;
+    image: HTMLImageElement;
     moves: FigureMove[];
     isMoved: boolean;
     constructor(color: ColorEnum);

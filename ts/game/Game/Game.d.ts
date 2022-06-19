@@ -5,10 +5,12 @@ import Board from '../Board/Board';
 import Figure from '../Figure/Figure';
 export declare class Game {
     board: Board;
+    isAuto: boolean;
     log: Log;
     players: Player[];
     activePlayer: Player;
     constructor();
+    get me(): Player;
     get activeCell(): Cell | null;
     move(player: Player, from: Cell, to: Cell): void;
     changePlayer(): void;
@@ -16,4 +18,6 @@ export declare class Game {
     onClick(event: MouseEvent): void;
     onMouseLeave(): void;
     onMouseMove(event: MouseEvent): boolean;
+    autoMove(): void;
+    autoGame(): void;
 }

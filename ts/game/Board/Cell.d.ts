@@ -7,14 +7,14 @@ interface CellState {
     is_active: boolean;
     is_movable: boolean;
     has_moves: boolean;
-    move_figure: string | null;
+    move_figure: HTMLImageElement | null;
 }
 export default class Cell {
     game: Game;
     context: CanvasRenderingContext2D;
     size: number;
     color: ColorEnum;
-    image: string;
+    image: HTMLImageElement;
     row: number;
     column: number;
     state: CellState;
