@@ -9,6 +9,7 @@ export class Move {
   from: Cell;
   to: Cell;
   timestamp: number;
+  prevFigure!: Figure | null;
 
   constructor(player: Player, from: Cell, to: Cell) {
     this.player = player;
@@ -17,9 +18,22 @@ export class Move {
     this.to = to;
     this.timestamp = Date.now();
 
-    this.figure.isMoved = true;
+    if (this.figure) {
+      this.figure.isMoved = true;
+    }
 
+    this.prevFigure = to.figure;
     to.figure = from.figure;
     from.figure = null;
+  }
+
+  restore() {
+    this.from.figure = this.figure;
+    this.to.figure = this.prevFigure;
+    this.figure.isMoved = false;
+  }
+
+  toString() {
+    return `${this.player.name}: ${this.figure.figure} ${this.from.coordinates} - ${this.to.coordinates}`
   }
 }

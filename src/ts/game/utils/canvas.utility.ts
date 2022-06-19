@@ -41,6 +41,9 @@ export class CanvasUtility {
   }
 
   public static text(context: CanvasRenderingContext2D, text: string, x: number, y: number, options: DrawOptions = {}) {
+    if (!options.stroke && !options.fill) {
+      options.stroke = true;
+    }
     if (options.line_width) {
       context.lineWidth = 2;
     }
@@ -56,7 +59,18 @@ export class CanvasUtility {
     if (options.line_color) {
       context.strokeStyle = options.line_color;
     }
-    context.strokeText(text, x, y);
+    if (options.shadow_blur) {
+      context.shadowBlur = options.shadow_blur;
+      if (options.shadow_color) {
+        context.shadowColor = options.shadow_color;
+      }
+    }
+    if (options.stroke) {
+      context.strokeText(text, x, y);
+    }
+    if (options.fill) {
+      context.fillText(text, x, y);
+    }
     CanvasUtility.reset(context);
   }
 
@@ -105,7 +119,7 @@ export class CanvasUtility {
     }
 
     if (options.shadow_blur) {
-      context.shadowBlur = 20;
+      context.shadowBlur = options.shadow_blur;
       if (options.shadow_color) {
         context.shadowColor = options.shadow_color;
       }

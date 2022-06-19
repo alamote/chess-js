@@ -1,15 +1,16 @@
 import { GameConfig } from '../config';
-import { ColorEnum } from '../interfaces';
+import { ColorEnum, FigureEnum } from '../interfaces';
 import Cell from './Cell';
-import Pawn from '../Figure/Pawn';
-import Rook from '../Figure/Rook';
-import Knight from '../Figure/Knight';
-import Bishop from '../Figure/Bishop';
 import King from '../Figure/King';
-import Queen from '../Figure/Queen';
 import { CanvasUtility, DrawOptions } from '../utils/canvas.utility';
 import { GameUtility } from '../utils/game.utility';
 import { Game } from '../Game/Game';
+import { PlayerType } from '../Player/Player';
+import Pawn from '../Figure/Pawn';
+import Bishop from '../Figure/Bishop';
+import Queen from '../Figure/Queen';
+import Knight from '../Figure/Knight';
+import Rook from '../Figure/Rook';
 
 interface BoardState {
   size: number;
@@ -25,7 +26,9 @@ export default class Board {
   size!: number;
   cells: Cell[] = [];
 
-  state!: BoardState;
+  state: BoardState = {
+    size: GameUtility.boardSize(),
+  };
   prevState!: BoardState;
 
   constructor(game: Game) {
@@ -39,9 +42,18 @@ export default class Board {
     }
   }
 
+  get transformCell(): Cell | null {
+    const rows: { [name: string]: number } = {
+      [ColorEnum.WHITE]: 7,
+      [ColorEnum.BLACK]: 0,
+    }
+    return this.cells.find(c => c.figure && c.figure instanceof Pawn && c.row === rows[c.figure.color]) ?? null;
+  }
+
   setBoardSize() {
     if (this.size !== GameUtility.boardSize()) {
       this.size = GameUtility.boardSize();
+      this.state.size = this.size;
       this.cells.forEach(cell => cell.size = GameUtility.cellSize());
       if (this.canvas) {
         this.canvas.width = this.size;
@@ -56,6 +68,21 @@ export default class Board {
 
   getCellByXAndY(x: number, y: number): Cell {
     return this.cells.find(cell => x >= cell.x && x <= (cell.x + cell.size) && y >= cell.y && y <= (cell.y + cell.size)) as Cell;
+  }
+
+  getCellsByColor(color: ColorEnum): Cell[] {
+    return this.cells.filter(cell => cell.figure && cell.figure.color === color);
+  }
+
+  getCellByFigureAndColor(figure: FigureEnum, color: ColorEnum): Cell {
+    return this.cells.find(cell => cell.figure && cell.figure.figure === figure && cell.figure.color === color) as Cell;
+  }
+
+  processCheck() {
+    Object.values(ColorEnum).forEach(color => {
+      const kingCell = this.getCellByFigureAndColor(FigureEnum.KING, color);
+      kingCell.state.is_checked = kingCell.isChecked;
+    });
   }
 
   reset() {
@@ -77,11 +104,24 @@ export default class Board {
         this.getCell(row, column).figure = new Pawn(row === 1 ? ColorEnum.WHITE : ColorEnum.BLACK);
       }
     });
+
+    this.cells.forEach(cell => cell.state.has_moves = this.game.activePlayer.color === cell.figure?.color && cell?.hasMoves);
+    this.processCheck();
+    if (this.game.activePlayer.type === PlayerType.AI) {
+      setTimeout(() => this.game.autoMove(), 100);
+    }
+
     requestAnimationFrame(() => this.render());
   }
 
   render(force: boolean = false) {
-    this.state = this.getState();
+    const textOptions: DrawOptions = {
+      line_width: 2,
+      text_align: 'center',
+      text_valign: 'middle',
+      font: '18px Arial',
+      line_color: GameConfig.colors.white,
+    };
     if (force || !this.prevState || JSON.stringify(this.state) !== JSON.stringify(this.prevState)) {
       this.prevState = {...this.state};
       CanvasUtility.rect(this.context, GameConfig.border_width / 2, GameConfig.border_width / 2, this.size - GameConfig.border_width, this.size - GameConfig.border_width, {
@@ -93,33 +133,69 @@ export default class Board {
       });
 
       const cellSize = this.cells[0].size;
-      const textOptions: DrawOptions = {
-        line_width: 2,
-        text_align: 'center',
-        text_valign: 'middle',
-        font: '18px Arial',
-        line_color: GameConfig.colors.white,
-      };
       for (let row = 1; row <= 8; row++) {
         CanvasUtility.text(this.context, row.toString(), (row - 1) * cellSize + cellSize / 2 + GameConfig.board.padding + GameConfig.border_width * 1.15 * (row - 1) + 3, GameConfig.board.padding / 2 + 2, textOptions);
         CanvasUtility.text(this.context, row.toString(), (row - 1) * cellSize + cellSize / 2 + GameConfig.board.padding + GameConfig.border_width * 1.15 * (row - 1) + 3, this.size - GameConfig.board.padding / 2 - 2, textOptions);
         CanvasUtility.text(this.context, String.fromCharCode(64 + row), GameConfig.board.padding / 2, Math.abs(row - 8) * cellSize + cellSize / 2 + GameConfig.board.padding + GameConfig.border_width * 1.3 * Math.abs(row - 8), textOptions);
         CanvasUtility.text(this.context, String.fromCharCode(64 + row), this.size - GameConfig.board.padding / 2, Math.abs(row - 8) * cellSize + cellSize / 2 + GameConfig.board.padding + GameConfig.border_width * 1.3 * Math.abs(row - 8), textOptions);
       }
-
-      this.cells.forEach(cell => cell.render(true));
     }
-    this.cells.forEach(cell => {
-      cell.state.has_moves = this.game.activePlayer.color === cell.figure?.color && cell?.figure?.hasMoves(this.game, cell);
-      cell.render(true)
-    });
+    this.cells.forEach(cell => cell.render());
+
+    if (this.transformCell) {
+      const height = GameUtility.cellSize() + 32;
+      const width = GameUtility.cellSize() * 5;
+      CanvasUtility.rect(this.context, this.size / 2 - width / 2, this.size / 2 - height / 2, width, height, {
+        stroke: true,
+        line_color: GameConfig.colors.border,
+        line_width: GameConfig.border_width,
+        fill: true,
+        fill_color: GameConfig.colors.white
+      });
+      CanvasUtility.text(this.context, 'Select new figure:', this.size / 2, this.size / 2 - height / 2 + 16, {
+        line_width: 2,
+        text_align: 'center',
+        text_valign: 'middle',
+        font: `bold 16px Poppins`,
+        line_color: GameConfig.colors.black,
+        fill: true
+      });
+      const color = this.transformCell.figure?.color ?? ColorEnum.WHITE;
+      const figures = [
+        new Pawn(color),
+        new Rook(color),
+        new Knight(color),
+        new Bishop(color),
+        new Queen(color),
+      ];
+      figures.forEach((figure, index) => {
+        const x = this.size / 2 - width / 2 + GameUtility.cellSize() * index;
+        const y = this.size / 2 - height / 2 + 24;
+        CanvasUtility.preloadedImage(this.context, x, y, GameUtility.cellSize(), GameUtility.cellSize(), figure.image);
+      });
+    }
+
+    if (!this.game.hasMoves()) {
+      const options: DrawOptions = {
+        line_width: 5,
+        text_align: 'center',
+        text_valign: 'middle',
+        font: `bold ${this.size / 10}px Poppins`,
+        line_color: GameConfig.colors.black,
+        fill_color: GameConfig.colors.black,
+        shadow_color: GameConfig.colors.white,
+        shadow_blur: 20,
+        fill: true
+      }
+      CanvasUtility.text(this.context, 'Game over!', this.size / 2, this.size / 2 - this.size / 15, options)
+      CanvasUtility.text(this.context, this.cells.find(c => c.isChecked) ? `${this.game.oppositePlayer.name} won :)` : 'Stalemate :(', this.size / 2, this.size / 2 + this.size / 15, options)
+    }
+
+    if (this.game.transformWindow) {
+      this.game.transformWindow.render();
+    }
 
     requestAnimationFrame(() => this.render());
   }
 
-  getState(): BoardState {
-    return {
-      size: GameUtility.boardSize()
-    }
-  }
 }

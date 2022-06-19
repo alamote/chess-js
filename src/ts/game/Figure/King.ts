@@ -9,14 +9,14 @@ export default class King extends Figure {
     this.setFigure(FigureEnum.KING);
 
     this.moves = [
-      new FigureMove(1, 1),
-      new FigureMove(1, 0),
-      new FigureMove(1, -1),
-      new FigureMove(0, 1),
-      new FigureMove(0, -1),
-      new FigureMove(-1, 1),
-      new FigureMove(-1, 0),
-      new FigureMove(-1, -1),
+      new FigureMove(1, 1, ['isNotNearKing']),
+      new FigureMove(1, 0, ['isNotNearKing']),
+      new FigureMove(1, -1, ['isNotNearKing']),
+      new FigureMove(0, 1, ['isNotNearKing']),
+      new FigureMove(0, -1, ['isNotNearKing']),
+      new FigureMove(-1, 1, ['isNotNearKing']),
+      new FigureMove(-1, 0, ['isNotNearKing']),
+      new FigureMove(-1, -1, ['isNotNearKing']),
     ];
   }
 }
