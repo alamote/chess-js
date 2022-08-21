@@ -17,20 +17,24 @@ export class Game {
 
   activePlayer!: Player;
 
+  timeout: number = 100;
+
   constructor() {
     const query = PageUtility.getQuery();
     const mode = query.mode?.toLowerCase() ?? 'pvp'
+    this.timeout = query.timeout ? +query.timeout : 100;
+
     this.players.push(new Player('Sergey', ColorEnum.WHITE, mode.startsWith('p') ? PlayerType.HUMAN : PlayerType.AI, true));
     this.players.push(new Player('Vet', ColorEnum.BLACK, mode.endsWith('p') ? PlayerType.HUMAN : PlayerType.AI));
 
     this.changePlayer();
 
-    if (this.activePlayer.color !== this.me.color) {
-      setTimeout(() => this.autoMove(), 100);
-    }
-
     this.board = new Board(this);
     this.board.reset();
+
+    if (this.activePlayer.color !== this.me.color) {
+      setTimeout(() => this.autoMove(), this.timeout);
+    }
   }
 
   get me(): Player {
@@ -55,6 +59,11 @@ export class Game {
     this.log.add(move);
     if (this.board.transformCell) {
       this.transformWindow = new TransformWindow(this, this.board.transformCell.figure?.color as ColorEnum);
+      if (this.activePlayer.type === PlayerType.AI) {
+        this.board.transformCell.figure = this.transformWindow.figures[Math.floor(Math.random() * this.transformWindow.figures.length)];
+        this.transformWindow = null;
+        this.updateBoard();
+      }
       return;
     }
     this.updateBoard();
@@ -66,7 +75,7 @@ export class Game {
     this.board.cells.forEach(cell => cell.state.is_movable = false);
     this.board.cells.forEach(cell => cell.state.has_moves = this.activePlayer.color === cell.figure?.color && cell?.hasMoves);
     if (this.hasMoves() && this.activePlayer.type === PlayerType.AI) {
-      setTimeout(() => this.autoMove(), 100);
+      setTimeout(() => this.autoMove(), this.timeout);
     }
   }
 

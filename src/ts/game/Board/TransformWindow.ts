@@ -3,7 +3,6 @@ import { ColorEnum } from '../interfaces';
 import { CanvasUtility } from '../utils/canvas.utility';
 import { GameUtility } from '../utils/game.utility';
 import { Game } from '../Game/Game';
-import Pawn from '../Figure/Pawn';
 import Bishop from '../Figure/Bishop';
 import Queen from '../Figure/Queen';
 import Knight from '../Figure/Knight';
@@ -19,7 +18,6 @@ export default class TransformWindow {
     this.game = game;
 
     this.figures = [
-      new Pawn(color),
       new Rook(color),
       new Knight(color),
       new Bishop(color),
