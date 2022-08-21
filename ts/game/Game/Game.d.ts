@@ -9,6 +9,7 @@ export declare class Game {
     log: Log;
     players: Player[];
     activePlayer: Player;
+    timeout: number;
     constructor();
     get me(): Player;
     get activeCell(): Cell | null;
